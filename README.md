@@ -6,7 +6,7 @@
 
 - 后端：Python + FastAPI
 - 数据库：PostgreSQL
-- 客户端：待团队确认
+- 客户端：React 19 + TypeScript + Vite
 - 管理端：React + TypeScript + Vite + ECharts
 - AI 服务：Python + OpenCV，可选 ONNX/FER 推理后端，独立部署
 - 数据交互：REST API / JSON，实时看板使用 WebSocket
@@ -21,7 +21,12 @@
 
 ## 快速开始
 
+
+后端环境准备、运行配置、数据库迁移和测试命令见“后端本地运行”章节；客户端见
+“客户端本地运行”及 [`client/README.md`](client/README.md)。
+
 后端要求 Python 3.11+ 和 PostgreSQL：
+
 
 ```sh
 cd backend
@@ -69,6 +74,32 @@ cd backend
 TEST_DATABASE_URL=postgresql+psycopg://用户名:密码@localhost:5432/emoji_checker_test pytest
 ```
 
+
+API 文档默认位于 `/docs`。接口请求、响应、权限和 AI 入库字段见 [`docs/api-contract.md`](docs/api-contract.md)。测试前创建独立 PostgreSQL 测试库，并在 `backend/` 执行 `TEST_DATABASE_URL=postgresql+psycopg://用户名:密码@localhost:5432/emoji_checker_test pytest`；测试仅在专用库的临时 schema 内执行 Alembic 迁移和数据清理，库名必须以 `_test` 结尾。
+
+## 客户端本地运行
+
+要求 Node.js 18+。连接已启动的后端：
+
+```sh
+cd client
+npm install
+cp .env.example .env
+npm run dev
+```
+
+浏览器访问 `http://localhost:5173`。如果本机暂时没有 PostgreSQL，可使用内置演示数据：
+
+```sh
+cd client
+npm install
+npm run dev:mock
+```
+
+演示账号：学生 `student / student12345`，教师 `teacher / teacher12345`。更多说明见
+[`client/README.md`](client/README.md)。
+
 ## 团队协作
 
 各成员负责各自模块，通过统一 API 契约进行集成，接口变更须及时同步。分支提交应真实可追溯，不提交 `.env`、令牌、视频、人脸图像、模型权重或构建产物。
+
