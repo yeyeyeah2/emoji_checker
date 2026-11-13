@@ -8,5 +8,11 @@ __pycache__/
 htmlcov/
 .ruff_cache/
 *.egg-info/
+node_modules/
 build/
 dist/
+*.tsbuildinfo
+admin-web/vite.config.js
+admin-web/vite.config.d.ts
+*.log
+._*
