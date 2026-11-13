@@ -1,36 +1,31 @@
-# 表情符号课堂情绪检查器系统
+# 表情符号课堂情绪检查器
 
-《软件工程实践》课程项目，支持学生主动提交 Emoji 情绪记录、AI 课堂情绪分析、教师历史查询及管理员统计管理。
+《软件工程实践》课程项目。学生可提交课堂 Emoji 情绪记录，教师可查看授课课堂数据，管理员可管理课程和用户、统计及导出数据；独立 AI 服务可匿名写入情绪分析结果。
 
-## 技术架构
+## 项目模块
 
-- 后端：Python + FastAPI
-- 数据库：PostgreSQL
-- 客户端：React 19 + TypeScript + Vite
-- 管理端：React + TypeScript + Vite + ECharts
-- AI 服务：Python + OpenCV，可选 ONNX/FER 推理后端，独立部署
-- 数据交互：REST API / JSON，实时看板使用 WebSocket
+| 目录 | 职责 | 使用说明 |
+| --- | --- | --- |
+| `backend/` | FastAPI、PostgreSQL、认证授权、业务 API 和 AI 结果入库 | 本页“后端启动” |
+| `client/` | 学生与教师浏览器客户端 | [`client/README.md`](client/README.md) |
+| `admin-web/` | 管理端、实时看板和多维统计 | [`admin-web/README.md`](admin-web/README.md) |
+| `ai-service/` | 视频情绪推理与匿名结果入库 | [`ai-service/README.md`](ai-service/README.md) |
+| `docs/` | 实验指导书及团队接口契约 | [`docs/api-contract.md`](docs/api-contract.md) |
 
-## 项目结构
+技术栈：Python、FastAPI、PostgreSQL、SQLAlchemy、Alembic、React、TypeScript 和 Vite。各模块独立运行，通过 REST/JSON 交互；实时课堂看板使用 WebSocket。
 
-- `backend/`：数据库、认证授权、业务 API、AI 入库
-- `client/`：学生及教师客户端
-- `admin-web/`：管理端、实时看板和多维统计
-- `ai-service/`：匿名视频情绪推理与后端入库
-- `docs/`：需求、接口契约及必要设计文档
+## 后端启动
 
-## 快速开始
-
-
-后端环境准备、运行配置、数据库迁移和测试命令见“后端本地运行”章节；客户端见
-“客户端本地运行”及 [`client/README.md`](client/README.md)。
-
-后端要求 Python 3.11+ 和 PostgreSQL：
-
+需要 Python 3.11+ 和 PostgreSQL。先创建数据库，并在 `backend/` 下配置 `.env`：
 
 ```sh
 cd backend
 cp .env.example .env
+```
+
+将 `.env` 中的数据库地址和各项密钥替换为本地配置，再运行：
+
+```sh
 python -m venv .venv
 . .venv/bin/activate
 pip install -e '.[dev]'
@@ -38,68 +33,19 @@ alembic upgrade head
 uvicorn app.main:app --reload
 ```
 
-管理端：
-
-```sh
-cd admin-web
-npm install
-npm run dev
-```
-
-AI 服务：
-
-```sh
-cd ai-service
-python -m venv .venv
-. .venv/bin/activate
-pip install -e '.[dev]'
-cp .env.example .env
-# 配置后端 AI 令牌、课堂 ID、视频源和模型路径
-emoji-ai
-```
-
-管理端开发服务器默认代理后端的 `http://localhost:8000`。后端 Swagger UI 位于 `/docs`；接口请求、响应、权限和 AI 入库字段见 [`docs/api-contract.md`](docs/api-contract.md)。AI 模型不随仓库分发，模型接口和隐私约束见 [`ai-service/README.md`](ai-service/README.md)。
+Swagger UI 默认位于 `/docs`。修改表结构后通过 Alembic 迁移；不要将 `.env` 或真实令牌提交到仓库。
 
 ## 测试
 
-```sh
-cd admin-web && npm test && npm run build
-cd ../ai-service && pytest
-```
-
-后端集成测试需要独立 PostgreSQL 测试库，并要求库名以 `_test` 结尾：
+各模块测试命令：
 
 ```sh
 cd backend
 TEST_DATABASE_URL=postgresql+psycopg://用户名:密码@localhost:5432/emoji_checker_test pytest
+
+cd ../client && npm test && npm run build
+cd ../admin-web && npm test && npm run build
+cd ../ai-service && pytest
 ```
 
-
-API 文档默认位于 `/docs`。接口请求、响应、权限和 AI 入库字段见 [`docs/api-contract.md`](docs/api-contract.md)。测试前创建独立 PostgreSQL 测试库，并在 `backend/` 执行 `TEST_DATABASE_URL=postgresql+psycopg://用户名:密码@localhost:5432/emoji_checker_test pytest`；测试仅在专用库的临时 schema 内执行 Alembic 迁移和数据清理，库名必须以 `_test` 结尾。
-
-## 客户端本地运行
-
-要求 Node.js 18+。连接已启动的后端：
-
-```sh
-cd client
-npm install
-cp .env.example .env
-npm run dev
-```
-
-浏览器访问 `http://localhost:5173`。如果本机暂时没有 PostgreSQL，可使用内置演示数据：
-
-```sh
-cd client
-npm install
-npm run dev:mock
-```
-
-演示账号：学生 `student / student12345`，教师 `teacher / teacher12345`。更多说明见
-[`client/README.md`](client/README.md)。
-
-## 团队协作
-
-各成员负责各自模块，通过统一 API 契约进行集成，接口变更须及时同步。分支提交应真实可追溯，不提交 `.env`、令牌、视频、人脸图像、模型权重或构建产物。
-
+后端测试要求 PostgreSQL 测试库名称以 `_test` 结尾，并在临时 schema 中运行迁移与清理。API 路径、字段、权限和错误格式见 [`docs/api-contract.md`](docs/api-contract.md)。
